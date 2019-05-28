@@ -1,5 +1,7 @@
 package io;
 
+import annotations.Entity;
+
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -16,14 +18,25 @@ public class io_Helper {
             if(file.isDirectory()){
                 classnames.addAll(getEntityClassnames(file.toPath()));
             }else if (file.isFile()){
-                classnames.add(file.getAbsolutePath());
+                String pathname = file.getAbsolutePath();
+                if(pathname.endsWith(".java")){
+                    String classname = pathname.substring(pathname.indexOf("java")+5,pathname.indexOf(".java")).replace("\\",".");
+                    try {
+                        Class entityClass = Class.forName(classname);
+                        if(entityClass.isAnnotationPresent(Entity.class)){
+                            classnames.add(classname);
+                        }
+                    } catch (ClassNotFoundException e) {
+                        System.out.println(e.toString());
+                    }
+                }
             }
         }
         return classnames;
     }
 
     public static void main(String[] args) {
-        Path dirPaht = Paths.get(".","src","main","java")
+        Path dirPaht = Paths.get(".","src","main","java");
         for (String str:getEntityClassnames(dirPaht)){
             System.out.println(str);
         }
